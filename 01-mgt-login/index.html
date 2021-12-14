@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://unpkg.com/@microsoft/mgt/dist/bundle/mgt-loader.js"></script>
+  </head>
+  <body>
+    <title>Using the mgt-login component</title>
+    <mgt-msal2-provider
+      client-id="70d965a7-d4e1-4058-b390-29519acfeec7"
+      scopes="User.Read"
+      login-type="popup">
+    </mgt-msal2-provider>
+
+    <mgt-login></mgt-login>
+
+    <pre id="userInfo" style="overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"></pre>
+
+    <script>
+      /**
+       * Loads the current user from a custom request to Microsoft Graph and assigns its value to the userInfo <pre> DOM element
+       */
+      const loadCurrentUser = () => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          let graphClient = mgt.Providers.globalProvider.graph.client;
+          graphClient.api(`/me`).get().then((result) => {
+            document.getElementById('userInfo').innerHTML = JSON.stringify(result);
+          });          
+        }
+      }
+
+      // When the provider status changes (the user was properly signed in), we fire the loadCurrentUser method
+      mgt.Providers.onProviderUpdated(loadCurrentUser);
+
+      // Event listener when the login flow is initiated
+      document.querySelector('mgt-login').addEventListener('loginInitiated', e => {
+        console.log(`Event: loginInitiated at ${new Date().toLocaleString()}`);
+      });
+      
+      // Event listener when the login flow is completed
+      document.querySelector('mgt-login').addEventListener('loginCompleted', e => {
+        console.log(`Event: loginCompleted at ${new Date().toLocaleString()}`);
+      });
+    </script>
+  </body>
+</html>

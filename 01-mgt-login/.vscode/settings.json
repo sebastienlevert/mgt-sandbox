@@ -1,0 +1,12 @@
+{    
+    "liveServer.settings.host": "localhost",
+    "liveServer.settings.port": 5500,
+    "liveServer.settings.NoBrowser": true,
+    "liveServer.settings.file": "index.html",
+    "markdownlint.config": {
+        "MD028": false,
+        "MD025": {
+            "front_matter_title": ""
+        }
+    }
+}
