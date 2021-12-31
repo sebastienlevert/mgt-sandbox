@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://unpkg.com/@microsoft/mgt@next/dist/bundle/mgt-loader.js"></script>
+    <style>
+      #isSignedIn {
+        display: none;
+      }
+
+      .example {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI",
+          -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+          sans-serif;
+        margin-bottom: 8px;
+      }
+
+      .example .title {
+        border-bottom: 1px solid #8a8886;
+        margin-bottom: 8px;
+        width: fit-content;
+      }
+
+      .facepile mgt-person:not(:first-child) {
+        margin-left: -12px;
+      }
+
+      mgt-person.custom-style {
+        --avatar-size: 90px;
+        --avatar-border: 3px dotted red;
+        --avatar-border-radius: 20% 40%;
+
+        --initials-color: green;
+        --initials-background-color: magenta;
+
+        --presence-background-color: blue;
+        --presence-icon-color: blue;
+
+        --font-family: "Segoe UI";
+        --font-size: 25px;
+        --font-weight: 700;
+        --color-sub1: red;
+        --text-transform: capitalize;
+
+        --line2-font-size: 16px;
+        --line2-font-weight: 400;
+        --line2-color: green;
+        --line2-text-transform: lowercase;
+
+        --line3-font-size: 8px;
+        --line3-font-weight: 400;
+        --line3-color: pink;
+        --line3-text-transform: none;
+
+        --details-spacing: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <title>Using the mgt-person component</title>
+    <mgt-msal2-provider
+      client-id="70d965a7-d4e1-4058-b390-29519acfeec7"
+      scopes="User.Read, User.ReadBasic.All, User.Read.All, Mail.ReadBasic, Sites.Read.All, People.Read.All, People.Read, Contacts.Read, Presence.Read"
+      login-type="popup"
+    >
+    </mgt-msal2-provider>
+
+    <mgt-login></mgt-login>
+
+    <div id="isSignedIn">
+      <div class="example">
+        <div class="title">
+          Simple person component for currently signed in user using the default
+          "avatar" view
+        </div>
+        <mgt-person person-query="me"></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Simple person component for currently signed in user with its initials
+        </div>
+        <mgt-person person-query="me" avatar-type="initials"></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">Person component for another user</div>
+        <mgt-person person-query="Alex Wilber"></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">Person component for multiple users</div>
+        <div class="facepile">
+          <mgt-person person-query="me"></mgt-person>
+          <mgt-person person-query="Alex Wilber"></mgt-person>
+          <mgt-person person-query="Megan"></mgt-person>
+          <mgt-person person-query="Patti"></mgt-person>
+        </div>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component for the currently signed in user's manager
+        </div>
+        <mgt-person id="manager"></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component for currently signed in user using the "oneline" view
+        </div>
+        <mgt-person person-query="me" view="oneline"></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component for currently signed in user using the "twolines"
+          view
+        </div>
+        <mgt-person person-query="me" view="twolines"></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component for currently signed in user using the "threelines"
+          view
+        </div>
+        <mgt-person person-query="me" view="threelines"></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component for currently signed in user with custom line data
+        </div>
+        <mgt-person
+          person-query="me"
+          view="threelines"
+          line1-property="givenName"
+          line2-property="jobTitle"
+          line3-property="mobilePhone"
+        ></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">Person component for a user not on Graph</div>
+        <mgt-person
+          view="threeLines"
+          fetch-image="false"
+          person-details='{"mail":"Parker@contoso.com","displayName":"Parker the Porcupine", "jobTitle":"PnP Hero"}'
+          person-image="https://raw.githubusercontent.com/pnp/media/master/parker/pnp/300w/parker.png"
+        ></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component for currently signed in user using the "threelines"
+          view and adding the hover capability
+        </div>
+        <mgt-person person-query="me" view="threelines" person-card="hover">
+        </mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component for currently signed in user with the presence
+          indicator
+        </div>
+        <mgt-person person-query="me" show-presence="true"></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component for currently signed in user with the presence
+          indicator and using the "threelines"
+        </div>
+        <mgt-person
+          person-query="me"
+          show-presence="true"
+          view="threelines"
+        ></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Customized person component for currently signed in user using the
+          default "threelines" view
+        </div>
+        <mgt-person
+          class="custom-style"
+          person-query="me"
+          view="threelines"
+        ></mgt-person>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Person component with custom events for currently signed in user using
+          the default "threelines" view
+        </div>
+        <mgt-person
+          id="custom-events"
+          person-query="me"
+          view="threelines"
+        ></mgt-person>
+      </div>
+    </div>
+
+    <div id="isNotSignedIn">
+      It seems you are not connected. Please sign in using the mgt-login
+      component!
+    </div>
+
+    <script>
+      /**
+       * Loads the current user's manager from a custom request to Microsoft Graph and assigns its value to the person component
+       */
+      const loadManager = () => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          let graphClient = mgt.Providers.globalProvider.graph.client;
+          graphClient
+            .api(`/me/manager`)
+            .get()
+            .then((result) => {
+              document.getElementById("manager").userId = result.id;
+            });
+        }
+      };
+
+      // When the user is signed in, we modify the visibility of some elements and load some data from Microsoft Graph
+      mgt.Providers.onProviderUpdated(() => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          document.getElementById("isSignedIn").style.display = "grid";
+          document.getElementById("isNotSignedIn").style.display = "none";
+        }
+
+        loadManager();
+      });
+
+      //document.getElementById("person-details").personDetails =
+
+      // Modifying the presence cache invalidation period to 30 seconds
+      mgt.CacheService.config.presence.invalidationPeriod = 30000;
+
+      // When the user clicks on the first line of the component
+      document
+        .querySelector("#custom-events")
+        .addEventListener("line1clicked", (e) => {
+          console.log(
+            `Event: line1clicked at ${new Date().toLocaleString()} with content ${JSON.stringify(
+              e.detail
+            )}`
+          );
+        });
+    </script>
+  </body>
+</html>
