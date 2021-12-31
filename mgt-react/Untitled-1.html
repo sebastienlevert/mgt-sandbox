@@ -1,0 +1,112 @@
+// P2
+<mgt-msal2-provider client-id="{client-id}"
+    login-type="redirect/popup" 
+    scopes="user.read,people.read" 
+    redirect-uri="https://my.redirect/uri" 
+    authority=""> 
+</mgt-msal2-provider> 
+
+<odata-data-source 
+    id="ODataDataSource" 
+    root-url="https://myfunction.azurewebsites.net/api/odata"
+    client-id="75e2baee-4091-4931-ab07-00bb2e8680e5">
+</odata-data-source>
+
+<sap-data-source 
+    id="SAPDataSource" 
+    root-url="https://myfunction.azurewebsites.net/api/sap"
+    client-id="75e2baee-4091-4931-ab07-00bb2e8680e5">
+</sap-data-source>
+
+<mgt-file person-query="me" view="twoLines" provider="SAPProvider"></mgt-file>
+
+<mgt-person person-query="me" view="twoLines"></mgt-person>
+
+<script>
+    // pseudo code in mgt-file
+
+    if(mgt.Providers[this.provider]) {
+        const provider = mgt.Providers[this.provider];
+        const results = await provider.getData('mgt-file', this.config);
+    }
+
+    // pseudo in ODataProvider
+
+    const getData = (type, config) : Promise<any> => {
+        const token = this.ensureToken();
+        await fetch(this.rootUrl + `/${type}&config=${JSON.stringify(config)}`, token);
+    }
+
+    // pseudo in SAPProvider : RESTProvider
+
+    mgt.Providers.addProvider(new SAPDataSource(), "SAPDataSource", "{client-id}");
+
+    public class MgtPersonDataSource: MicrosoftGraphDataSource {
+        public override getData = (type, config) : Promise<any> => {
+            const token = this.ensureToken();
+            let apiUrl = this.rootUrl;
+            let method = HTTPMethod.GET;
+            let body = HTTPMethod.GET;
+            switch(type) {
+                case MgtComponents.File: 
+                    apiUrl = apiUrl + `/GetMeFromSAP?view=${config.view}`;
+                    break;
+                case MgtComponents.Person: 
+                    apiUrl = apiUrl + `/GetPerson`;
+                    method = HTTPMethod.POST;
+                    body = {
+                        config: config
+                    };
+                    break;
+            }
+
+            await fetch(apiUrl, method, token);
+        }
+    }
+
+    public class SAPDataSource: RESTDataSource {
+
+        public override getData = (type, config) : Promise<any> => {
+            const token = this.ensureToken();
+            let apiUrl = this.rootUrl;
+            let method = HTTPMethod.GET;
+            let body = HTTPMethod.GET;
+            switch(type) {
+                case MgtComponents.File: 
+                    apiUrl = apiUrl + `/GetMeFromSAP?view=${config.view}`;
+                    break;
+                case MgtComponents.Person: 
+                    apiUrl = apiUrl + `/GetPerson`;
+                    method = HTTPMethod.POST;
+                    body = {
+                        config: config
+                    };
+                    break;
+            }
+
+            await fetch(apiUrl, method, token);
+
+            // Export class as a web component
+        }
+    }
+
+    // In mgt-person
+
+
+
+    let image = this.dataSource.getGroupImage(details, MgtPerson.config.useContactApis);
+    
+    if ('groupTypes' in details) {
+        
+    } else {
+        image = await getPersonImage(graph, details, MgtPerson.config.useContactApis);
+    }
+    if (image) {
+        details.personImage = image;
+        this._fetchedImage = image;
+    }
+    
+/*document.getElementsByTagName('mgt-person').getData((config) => {
+    return await dataSource.getMgtPersonData(config);
+});*/
+</script>
