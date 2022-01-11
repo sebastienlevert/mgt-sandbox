@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://unpkg.com/@microsoft/mgt@next/dist/bundle/mgt-loader.js"></script>
+    <style>
+      #isSignedIn {
+        display: none;
+      }
+
+      .example {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI",
+          -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+          sans-serif;
+        margin-bottom: 8px;
+      }
+
+      .example .title {
+        border-bottom: 1px solid #8a8886;
+        margin-bottom: 8px;
+        width: fit-content;
+      }
+    </style>
+  </head>
+  <body>
+    <title>Using the mgt-people component</title>
+    <mgt-msal2-provider      
+      client-id="%YOUR_CLIENT_ID%"
+      scopes="GroupMember.Read.All, User.ReadBasic.All, User.Read.All, People.Read, Presence.Read.All"
+      login-type="popup"
+    >
+    </mgt-msal2-provider>
+
+    <mgt-login></mgt-login>
+
+    <div id="isSignedIn">
+      <div class="example">
+        <div class="title">
+          Simple people component for people trending around the currently signed in user
+        </div>
+        <mgt-people show-max="5"></mgt-people>
+      </div>
+      
+      <div class="example">
+        <div class="title">
+          Simple people component for users from a specific group
+        </div>
+        <mgt-people group-id="%GOUP_ID%" show-max="10"></mgt-people>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Simple people component for users based on an array of ids
+        </div>
+        <mgt-people user-ids="%USER_ID%,%USER_ID%"></mgt-people>
+      </div>
+      
+      <div class="example">
+        <div class="title">
+          Simple people component for users based on a people query
+        </div>
+        <mgt-people people-queries="Megan Bowen,Cameron,GradyA"></mgt-people>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Simple people component for people trending around the currently signed in user with their presence
+        </div>
+        <mgt-people show-presence="true"></mgt-people>
+      </div>
+      
+      <div class="example">
+        <div class="title">
+          Simple people component for people trending around the currently signed in user without their person card
+        </div>
+        <mgt-people person-card="none"></mgt-people>
+      </div>
+      
+      <div class="example">
+        <div class="title">
+          Simple people component for direct reports of the currently signed in user
+        </div>
+        <mgt-people resource="/me/directReports"></mgt-people>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Simple people component for data coming from other sources
+        </div>
+        <mgt-people id="people-manager"></mgt-people>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Simple people component for data coming from other sources
+        </div>
+        <mgt-people id="people-manager"></mgt-people>
+      </div>
+      
+      <div class="example">
+        <div class="title">
+          Simple people component with custom template
+        </div>
+        <mgt-people>
+          <template>
+            <ul><li data-for="person in people">
+              <mgt-person person-query="{{ person.userPrincipalName }}"></mgt-person>
+              <h3 data-if="person.displayName == 'Megan Bowen'">
+                Look! It's Megan!
+              </h3>
+              <h3 data-else>
+                {{person.displayName}}
+              </h3>
+              <p>{{ person.jobTitle }}</p>
+              <p>{{ person.department }}</p>
+            </li></ul>
+          </template>
+        </mgt-people>
+      </div>
+    </div>
+
+    <div id="isNotSignedIn">
+      It seems you are not connected. Please sign in using the mgt-login
+      component!
+    </div>
+
+    <script>
+      /**
+       * Loads the current user's manager from a custom request to Microsoft Graph and assigns its value to the person component
+       */
+       const loadManager = () => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          let graphClient = mgt.Providers.globalProvider.graph.client;
+          graphClient
+            .api(`/me/manager`)
+            .get()
+            .then((result) => {   
+              graphClient
+                .api(`/users/${result.id}/directReports`)
+                .get()
+                .then((directReports) => {
+                  document.getElementById("people-manager").people = directReports.value;
+                });          
+            });
+        }
+      };
+      // When the user is signed in, we modify the visibility of some elements and load some data from Microsoft Graph
+      mgt.Providers.onProviderUpdated(() => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          document.getElementById("isSignedIn").style.display = "grid";
+          document.getElementById("isNotSignedIn").style.display = "none";
+        
+          loadManager();
+        }
+      });
+    </script>
+  </body>
+</html>
