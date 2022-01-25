@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://unpkg.com/@microsoft/mgt@next/dist/bundle/mgt-loader.js"></script>
+    <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
+
+    <style>
+      #isSignedIn {
+        display: none;
+      }
+      
+      #teamMembers {
+        display: none;
+      }
+      
+      #sendMessage {
+        display: none;
+        padding-top: 16px;
+      }
+
+      .example {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI",
+          -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+          sans-serif;
+        margin-bottom: 8px;
+      }
+
+      .example .title {
+        border-bottom: 1px solid #8a8886;
+        margin-bottom: 8px;
+        width: fit-content;
+      }
+    </style>
+  </head>
+  <body>
+    <title>Using the mgt-teams-channel-picker component</title>
+    <mgt-msal2-provider      
+      client-id="%YOUR_CLIENT_ID%"
+      scopes="GroupMember.Read.All, User.ReadBasic.All, User.Read.All, People.Read, Presence.Read.All, Group.Read.All, ChannelMessage.Send"
+      login-type="popup"
+    >
+    </mgt-msal2-provider>
+
+    <mgt-login></mgt-login>
+
+    <div id="isSignedIn">      
+      <div class="example">
+        <div class="title">
+          Teams Channel picker for the currently signed in user
+        </div>
+        <mgt-teams-channel-picker></mgt-teams-channel-picker>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Teams Channel picker for the currently signed in user showcasing the team members
+        </div>
+        <mgt-teams-channel-picker id="teamPicker"></mgt-teams-channel-picker>
+        <div id="teamMembers">
+          <mgt-people id="teamGroupId" show-max="10" show-presence="true"></mgt-people>
+        </div>        
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Teams Channel picker for sending a Teams message
+        </div>
+        <mgt-teams-channel-picker id="sendMessagePicker"></mgt-teams-channel-picker>
+        <div id="sendMessage">
+          <fluent-text-area id="sendMessageText" appearance="outline"></fluent-text-area>
+          <fluent-button id="sendMessageButton" appearance="accent">Send message</fluent-button>
+        </div>        
+      </div>
+
+
+      <div class="example">
+        <div class="title">
+          Teams Channel picker with custom templates
+        </div>        
+        <mgt-teams-channel-picker>
+          <template data-type="error">
+            <p>Sorry, no Teams or Channels were found</p>
+          </template>
+          <template data-type="loading">
+            <p>Loading results....</p>
+          </template>
+        </mgt-teams-channel-picker>       
+      </div>
+    </div>
+
+    <div id="isNotSignedIn">
+      It seems you are not connected. Please sign in using the mgt-login
+      component!
+    </div>
+
+    <script>
+      // When the user is signed in, we modify the visibility of some elements and load some data from Microsoft Graph
+      mgt.Providers.onProviderUpdated(() => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          document.getElementById("isSignedIn").style.display = "grid";
+          document.getElementById("isNotSignedIn").style.display = "none";
+        }
+      });
+
+      document.querySelector('#teamPicker').addEventListener('selectionChanged', e => {
+        if (e.detail.length > 0) {
+          document.getElementById("teamGroupId").groupId = e.detail[0].team.id;
+          document.getElementById("teamMembers").style.display = "grid";
+        } else {
+          document.getElementById("teamMembers").style.display = "none";
+        }
+      });
+
+      document.querySelector('#sendMessagePicker').addEventListener('selectionChanged', e => {
+        if (e.detail.length > 0) {
+          document.getElementById("sendMessage").style.display = "grid";
+        } else {
+          document.getElementById("sendMessage").style.display = "none";
+        }
+      });
+      
+      document.querySelector('#sendMessageButton').addEventListener('click', _ => {
+        var selectedItem = document.getElementById("sendMessagePicker").selectedItem;
+        
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          let graphClient = mgt.Providers.globalProvider.graph.client;
+          graphClient
+            .api(`/teams/${selectedItem.team.id}/channels/${selectedItem.channel.id}/messages`)
+            .post({
+                "body": {
+                  "content": document.getElementById("sendMessageText").value
+                }
+            })
+            .then((result) => {    
+              alert("Message sent!")                 ;
+            });
+        }
+      });
+    </script>
+  </body>
+</html>
