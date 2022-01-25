@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://unpkg.com/@microsoft/mgt@next/dist/bundle/mgt-loader.js"></script>
+    <style>
+      #isSignedIn {
+        display: none;
+      }
+
+      .example {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI",
+          -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+          sans-serif;
+        margin-bottom: 8px;
+      }
+
+      .example .title {
+        border-bottom: 1px solid #8a8886;
+        margin-bottom: 8px;
+        width: fit-content;
+      }
+    </style>
+  </head>
+  <body>
+    <title>Using the mgt-people-picker component</title>
+    <mgt-msal2-provider      
+      client-id="%YOUR_CLIENT_ID%"
+      scopes="GroupMember.Read.All, User.ReadBasic.All, User.Read.All, People.Read, Presence.Read.All, Group.Read.All"
+      login-type="popup"
+    >
+    </mgt-msal2-provider>
+
+    <mgt-login></mgt-login>
+
+    <div id="isSignedIn">      
+      <div class="example">
+        <div class="title">
+          Simple people picker for people trending around the currently signed in user
+        </div>
+        <mgt-people-picker></mgt-people-picker>
+      </div>
+      
+      <div class="example">
+        <div class="title">
+          Simple people picker component for users from a specific group with some property changes
+        </div>
+        <mgt-people-picker placeholder="Find your best colleague!" selection-mode="single"></mgt-people-picker>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          Simple people picker for groups
+        </div>
+        <mgt-people-picker type="group" group-type="unified"></mgt-people-picker>
+      </div>
+      
+      <div class="example">
+        <div class="title">
+          Simple people picker component for users from a specific group using transitive search
+        </div>
+        <mgt-people-picker group-id="a752c905-e950-407b-b9e2-a77e41fe1807" transitive-search="true"></mgt-people-picker>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          People picker with selectionChanged event
+        </div>
+        <mgt-people-picker id="selectionChanged"></mgt-people-picker>
+        <mgt-people id="selectionShowcase"></mgt-people>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          People picker component for default selected user ids
+        </div>
+        <mgt-people-picker default-selected-user-ids="80b33b86-214f-4a42-8888-4029bf54a2af,e3a432b4-81a7-4397-8540-b5d2b6d41f36"></mgt-people-picker>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          People picker component for default selected group ids
+        </div>
+        <mgt-people-picker type="group" default-selected-group-ids="7210d6be-2d66-4977-a59c-844d150c0d97,a363e472-4773-4839-aa58-6303f6aee3d5"></mgt-people-picker>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          People picker with default selection
+        </div>
+        <mgt-people-picker id="defaultSelection" disabled="true"></mgt-people-picker>
+      </div>
+
+      <div class="example">
+        <div class="title">
+          People picker component for any email adresses
+        </div>
+        <mgt-people-picker allow-any-email="true"></mgt-people-picker>
+      </div>
+    </div>
+
+    <div id="isNotSignedIn">
+      It seems you are not connected. Please sign in using the mgt-login
+      component!
+    </div>
+
+    <script>
+       /**
+       * Loads the current user's manager from a custom request to Microsoft Graph and assigns its value to the person component
+       */
+       const loadDirectReports = () => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          let graphClient = mgt.Providers.globalProvider.graph.client;
+          graphClient
+            .api(`/me/directReports`)
+            .get()
+            .then((result) => {    
+              document.getElementById('defaultSelection').selectedPeople = result.value;                 
+            });
+        }
+      };
+
+      // When the user is signed in, we modify the visibility of some elements and load some data from Microsoft Graph
+      mgt.Providers.onProviderUpdated(() => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          document.getElementById("isSignedIn").style.display = "grid";
+          document.getElementById("isNotSignedIn").style.display = "none";
+
+          loadDirectReports();
+        }
+      });
+
+      document.getElementById('selectionChanged').addEventListener('selectionChanged', e => {
+        document.getElementById('selectionShowcase').people = e.detail;
+        document.getElementById("selectionShowcase").style.display = "grid";
+      });
+    </script>
+  </body>
+</html>
