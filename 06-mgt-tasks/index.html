@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://unpkg.com/@microsoft/mgt@next/dist/bundle/mgt-loader.js"></script>
+    <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
+
+    <style>
+      #isSignedIn {
+        display: none;
+      }
+      
+      #teamMembers {
+        display: none;
+      }
+      
+      #sendMessage {
+        display: none;
+        padding-top: 16px;
+      }
+
+      .example {
+        font-family: "Segoe UI", "Segoe UI Web (West European)", "Segoe UI",
+          -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue",
+          sans-serif;
+        margin-bottom: 8px;
+      }
+
+      .example .title {
+        border-bottom: 1px solid #8a8886;
+        margin-bottom: 8px;
+        width: fit-content;
+      }
+    </style>
+  </head>
+  <body>
+    <title>Using the mgt tasks components (To Do and Planner)</title>
+    <mgt-msal2-provider      
+      client-id="%YOUR_CLIENT_ID%"
+      scopes="Group.ReadWrite.All, Tasks.ReadWrite"
+      login-type="popup"
+    >
+    </mgt-msal2-provider>
+
+    <mgt-login></mgt-login>
+
+    <div id="isSignedIn">   
+      <fluent-tabs id="myTab" activeId="TabTwo" orientation="horizontal">
+        <fluent-tab id="mgt-tasks">Planner</fluent-tab>
+        <fluent-tab id="mgt-todo">To Do</fluent-tab>
+        <fluent-tab-panel id="mgt-task-panel">
+          <div class="example">
+            <div class="title">
+              Simple tasks component for the currently signed in user
+            </div>
+            <mgt-tasks></mgt-tasks>
+          </div>
+    
+          <div class="example">
+            <div class="title">
+              Simple tasks component in read-only for the currently signed in user
+            </div>
+            <mgt-tasks read-only="true"></mgt-tasks>
+          </div>
+          
+          <div class="example">
+            <div class="title">
+              Simple tasks component for a specific plan and bucket
+            </div>
+            <mgt-tasks read-only="true" hide-header="true" hide-options="true" group-id="845a19a7-ee69-419c-baa5-8cf369dc96d1"></mgt-tasks>
+          </div>
+    
+          <div class="example">
+            <div class="title">
+              Simple tasks component filtered by category for the currently signed in user
+            </div>
+            <mgt-tasks id="specific-category"></mgt-tasks>
+          </div>
+          
+          <div class="example">
+            <div class="title">
+              Simple tasks component with custom template
+            </div>
+              <mgt-tasks>
+                <template data-type="task-details">
+                  <div>
+                    <h2>{{task.title}}</h2>
+                    Created by: <mgt-person view="threeLines" user-id="{{task.createdBy.user.id}}"></mgt-person>
+                  </div>
+                  <div>
+                    Importance Level: {{task.priority}}
+                  </div>
+              </template>
+            </mgt-tasks>
+          </div>
+    
+          <div class="example">
+            <div class="title">
+              Simple tasks component with dark mode
+            </div>
+            <mgt-tasks class="mgt-dark"></mgt-tasks>
+          </div>
+        </fluent-tab-panel>
+        <fluent-tab-panel id="mgt-todo-panel">
+          <div class="example">
+            <div class="title">
+              Simple To Do component for the currently signed in user
+            </div>
+            <mgt-todo></mgt-todo>
+          </div>
+
+          <div class="example">
+            <div class="title">
+              Simple To Do component in read-only for the currently signed in user
+            </div>
+            <mgt-todo read-only="true"></mgt-todo>
+          </div>
+          
+          <div class="example">
+            <div class="title">
+              Simple To Do component for a specific task list
+            </div>
+            <mgt-todo target-id="AAMkADhmNDAxZGNmLTkwNDEtNDE5NC04MTZhLTY1NTA2YzJjYTEwOAAuAAAAAACpDVhdWqhJRJTElCtzbwWQAQAQO0V8JjzARaitvF64UU5PAAAdylTHAAA="></mgt-todo>
+          </div>
+
+          <div class="example">
+            <div class="title">
+              Simple To Do component with all available options
+            </div>
+            <mgt-todo read-only="true" hide-header="true" initial-id="AAMkADhmNDAxZGNmLTkwNDEtNDE5NC04MTZhLTY1NTA2YzJjYTEwOAAuAAAAAACpDVhdWqhJRJTElCtzbwWQAQAQO0V8JjzARaitvF64UU5PAAAdylTHAAA="></mgt-todo>
+          </div>
+
+          <div class="example">
+            <div class="title">
+              Simple To Do component with custom template
+            </div>
+              <mgt-todo class="mgt-dark">
+                <template data-type="task-details">
+                  <div>
+                    <h2 data-if="task.importance == 'high'">{{task.title}} ⭐</h2>
+                    <h2 data-else>{{task.title}}</h2>
+                    Description: {{task.body.content}}
+                  </div>
+              </template>
+            </mgt-todo>
+          </div>
+        </fluent-tab-panel>
+      </fluent-tabs>   
+      
+    </div>
+
+    <div id="isNotSignedIn">
+      It seems you are not connected. Please sign in using the mgt-login
+      component!
+    </div>
+
+    <script>
+      // When the user is signed in, we modify the visibility of some elements and load some data from Microsoft Graph
+      mgt.Providers.onProviderUpdated(() => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          document.getElementById("isSignedIn").style.display = "grid";
+          document.getElementById("isNotSignedIn").style.display = "none";
+        }
+      });
+
+      let taskView = document.querySelector('#specific-category');
+      taskView.taskFilter = (task) => { 
+        return task.appliedCategories.category3 === true;
+      }
+    </script>
+  </body>
+</html>
