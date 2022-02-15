@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://unpkg.com/@microsoft/mgt@next/dist/bundle/mgt-loader.js"></script>
+    <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" integrity="sha512-qTXRIMyZIFb8iQcfjXWCO8+M5Tbc38Qi5WzdPOYZHIlZpzBHG3L3by84BBBOiRGiEb7KKtAOAs5qYdUiZiQNNQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/11.0.0/css/fabric.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@n8d/htwoo-core/dist/css/htwoo.min.css">
+
+    <style>
+      #isSignedIn {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <title>Using the mgt get component</title>
+    <mgt-msal2-provider      
+      client-id="%YOUR_CLIENT_ID%"
+      login-type="popup"
+    >
+    </mgt-msal2-provider>
+    
+    <mgt-login></mgt-login>
+
+    <div id="isSignedIn">   
+      <fluent-tabs id="myTab" activeId="TabTwo" orientation="horizontal">
+        <fluent-tab id="mgt-get-emails">Emails</fluent-tab>
+        <fluent-tab id="mgt-get-files">Files</fluent-tab>
+        <fluent-tab-panel id="mgt-get-emails-panel">
+          <style>
+            /* Email Styles */
+            .mgt-email {
+              box-shadow: var(--box-shadow);
+              padding: 10px;
+              margin: 8px 16px;
+            }
+
+            .mgt-email:hover{
+              border-left: 4px;
+              border-left-color: var(--input-border-color--hover);
+              border-left-style: solid;
+            }
+
+            .mgt-email .title h3 {
+              color: var(--color-sub1);
+              font-size: 14px;
+              grid-area: 1 / 1 / auto / 3;
+              font-size: 14px;
+              margin: 0;
+            }
+
+            .mgt-email a {
+              color: var(--color-sub1);
+              text-decoration: none;
+            }
+
+            .mgt-email .command-bar-action a {
+              color: var(--icon-color);
+              text-decoration: none;
+            }
+
+            .mgt-email mgt-person {
+              --font-size: 12px;
+              --avatar-size-s: 16px;
+            }
+
+            .mgt-email .preview {
+              font-size: 13px;
+              text-overflow: ellipsis;
+              word-wrap: break-word;
+              overflow: hidden;
+              max-height: 2.8em;
+              line-height: 1.4em;
+              color: var(--color-sub2)
+            }
+
+            .mgt-email .empty-body {
+              font-style: italic;
+            }
+
+            .mgt-email .command-bar {
+              font-family: FabricMDL2Icons;
+              font-style: inherit;
+              text-decoration: none;
+              color: var(--color-sub1);
+            }
+
+            .mgt-email .command-bar-action {
+              font-family: FabricMDL2Icons;
+              font-style: inherit;
+              text-decoration: none;
+              color: var(--icon-color);
+              font-size: 16px;
+              padding-left: 4px;
+            }
+
+            .mgt-email .header {
+              display: flex;
+              justify-content: space-between;
+            }
+
+            .mgt-email .title {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 4px;
+              color: var(--color-sub1);
+            }
+
+            .mgt-email .date {
+              font-size: 12px;
+              padding-left: 4px;
+              float: right;
+            }
+
+            .mgt-email-title {
+              padding-left: 20px;
+            }
+          </style>
+          
+          <h1 class="mgt-email-title">My emails</h1>
+          <mgt-get id="mgt-email" resource="/me/mailFolders/Inbox/messages" scopes="Mail.Read, Mail.ReadWrite" max-pages="1" polling-rate="5000">
+            <template>
+              <div class="mgt-email" data-for="email in value">
+                <div class="header">     
+                  <div>
+                    <mgt-person person-query="{{email.sender.emailAddress.address}}" view="oneline" person-card="hover" />
+                  </div>           
+                  <span class="command-bar">
+                    <div class="command-bar-action">
+                        <a href="#" data-props="@click: deleteClick" onclick="return false;">
+                          <span class="ms-Icon--Delete" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                  </span>       
+                </div>
+                <div class="title">
+                  <a href="{{ email.webLink }}" data-props="@click: emailClick" onclick="return false;">
+                    <h3>{{ email.subject }}</h3>
+                  </a>
+                  <span class="date">
+                    {{ getFormattedDate(email.receivedDateTime) }}
+                  </span>
+                </div>
+                <div data-if="email.bodyPreview" class="preview" innerHtml>{{email.bodyPreview}}</div>
+                <div data-else class="preview empty-body">
+                  ...
+                </div>
+              </div>
+            </template>
+
+            <template data-type="loading">
+              Loading...
+            </template>
+
+            <template data-type="error">
+              {{ this }}
+            </template>
+          </mgt-get>
+
+          <script>
+            const provider = window.mgt.Providers.globalProvider;
+            let mgtEmail = document.querySelector('#mgt-email');
+
+            mgtEmail.templateContext = {
+
+              getFormattedDate: (date) => {
+                  return moment(date).calendar(); 
+              },
+
+              emailClick: (e, context, root) => {
+                  window.open(context.email.webLink, '_blank', 'noreferrer');  
+                  return false;
+              },
+
+              deleteClick: async (e, context, root) => {
+                  if (provider && provider.state === window.mgt.ProviderState.SignedIn) {
+                      let graphClient = provider.graph.client;
+                      await graphClient.api(`/me/messages/${context.email.id}/move`).post({
+                          "destinationId": "deleteditems"
+                      });
+                      mgtEmail.refresh(true);
+                  }
+              }
+            }
+          </script>
+        </fluent-tab-panel>
+        <fluent-tab-panel id="mgt-get-files-panel">
+          <style>
+            mgt-file-list {
+              padding: 0 20px;
+              margin-bottom: 1em;
+            }
+
+            .hoo-doccard {
+              cursor: pointer;
+            }
+
+            .hoo-cardgrid {
+              margin-left: 0;
+              margin-bottom: 1em;
+            }
+
+            /* colors */
+            :root {
+              --accent: #4f6bed;
+              --accentButtonBackground: #4f6bed;
+              --accentButtonText: #ffffff;
+              --AccentLines: #13898d;
+              --AccentText: #03787c;
+              --actionLink: #323130;
+              --actionLinkHovered: #201f1e;
+              --BackgroundOverlay: rgba(255, 255, 255, 0.85);
+              --backgroundOverlay: rgba(255, 255, 255, 0.85);
+              --black: #000000;
+              --blackTranslucent40: rgba(0, 0, 0, .4);
+              --blockingBackground: #FDE7E9;
+              --blockingIcon: #FDE7E9;
+              --blue: #0078d4;
+              --blueDark: #002050;
+              --blueLight: #00bcf2;
+              --blueMid: #00188f;
+              --bodyBackground: #ffffff;
+              --bodyBackgroundChecked: #edebe9;
+              --bodyBackgroundHovered: #f3f2f1;
+              --bodyDivider: #edebe9;
+              --bodyFrameBackground: #ffffff;
+              --bodyFrameDivider: #edebe9;
+              --bodyStandoutBackground: #faf9f8;
+              --bodySubtext: #605e5c;
+              --bodyText: #323130;
+              --BodyText: #333333;
+              --bodyTextChecked: #000000;
+              --ButtonBackground: #f8f8f8;
+              --buttonBackground: #ffffff;
+              --buttonBackgroundChecked: #c8c6c4;
+              --buttonBackgroundCheckedHovered: #edebe9;
+              --buttonBackgroundDisabled: #f3f2f1;
+              --buttonBackgroundHovered: #f3f2f1;
+              --buttonBackgroundPressed: #edebe9;
+              --buttonBorder: #8a8886;
+              --ButtonBorder: #a6a6a6;
+              --buttonBorderDisabled: #f3f2f1;
+              --ButtonDisabledBackground: #f8f8f8;
+              --ButtonDisabledBorder: #eaeaea;
+              --ButtonDisabledText: #a6a6a6;
+              --ButtonGlyph: #666666;
+              --ButtonGlyphActive: #333333;
+              --ButtonGlyphDisabled: #c8c8c8;
+              --ButtonHoverBackground: #c5e9ea;
+              --ButtonHoverBorder: #98d6d8;
+              --ButtonPressedBackground: #98d6d8;
+              --ButtonPressedBorder: #13898d;
+              --buttonText: #323130;
+              --ButtonText: #333333;
+              --buttonTextChecked: #201f1e;
+              --buttonTextCheckedHovered: #000000;
+              --buttonTextDisabled: #a19f9d;
+              --buttonTextHovered: #201f1e;
+              --buttonTextPressed: #201f1e;
+              --cardShadow: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+              --cardShadowHovered: 0 0 1px #a19f9d;
+              --cardStandoutBackground: #ffffff;
+              --CommandLinks: #666666;
+              --CommandLinksDisabled: #a6a6a6;
+              --CommandLinksHover: #03787c;
+              --CommandLinksPressed: #014446;
+              --CommandLinksSecondary: #212121;
+              --ContentAccent1: #03787c;
+              --ContentAccent2: #00485b;
+              --ContentAccent3: #288054;
+              --ContentAccent4: #767956;
+              --ContentAccent5: #ed0033;
+              --ContentAccent6: #682a7a;
+              --defaultStateBackground: #faf9f8;
+              --DialogBorder: #f4f4f4;
+              --dialogBorder: #f4f4f4;
+              --disabledBackground: #f3f2f1;
+              --DisabledBackground: #f8f8f8;
+              --disabledBodySubtext: #c8c6c4;
+              --disabledBodyText: #a19f9d;
+              --disabledBorder: #c8c6c4;
+              --DisabledLines: #eaeaea;
+              --disabledSubtext: #d2d0ce;
+              --disabledText: #a19f9d;
+              --DisabledText: #a6a6a6;
+              --elevation16: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108);
+              --elevation4: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108);
+              --elevation64: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18);
+              --elevation8: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108);
+              --EmphasisBackground: #03787c;
+              --EmphasisBorder: #025c5f;
+              --EmphasisHoverBackground: #025c5f;
+              --EmphasisHoverBorder: #014446;
+              --EmphasisText: #ffffff;
+              --errorBackground: #FDE7E9;
+              --errorIcon: #A80000;
+              --errorText: #a4262c;
+              --focusBorder: #605e5c;
+              --FooterBackground: rgba(255, 255, 255, 0.85);
+              --green: #107c10;
+              --greenDark: #004b1c;
+              --greenLight: #bad80a;
+              --HeaderAccentLines: #13898d;
+              --HeaderBackground: rgba(255, 255, 255, 0.85);
+              --HeaderDisabledBackground: #f8f8f8;
+              --HeaderDisabledLines: #eaeaea;
+              --HeaderDisableText: #a6a6a6;
+              --HeaderLines: #a6a6a6;
+              --HeaderNavigationHoverText: #03787c;
+              --HeaderNavigationPressedText: #014446;
+              --HeaderNavigationSelectedText: #03787c;
+              --HeaderNavigationText: #666666;
+              --HeaderSiteTitle: #212121;
+              --HeaderStrongLines: #98d6d8;
+              --HeaderSubtleLines: #c8c8c8;
+              --HeaderSubtleText: #767676;
+              --HeaderText: #333333;
+              --HoverBackground: rgba(197, 233, 234, 0.50);
+              --Hyperlink: #03787c;
+              --HyperlinkActive: #014446;
+              --Hyperlinkfollowed: #014446;
+              --infoBackground: #f3f2f1;
+              --infoIcon: #605e5c;
+              --inputBackground: #ffffff;
+              --inputBackgroundChecked: #03787c;
+              --inputBackgroundCheckedHovered: #025c5f;
+              --inputBorder: #605e5c;
+              --inputBorderHovered: #323130;
+              --inputFocusBorderAlt: #03787c;
+              --inputForegroundChecked: #ffffff;
+              --inputIcon: #03787c;
+              --inputIconDisabled: #a19f9d;
+              --inputIconHovered: #025c5f;
+              --inputPlaceholderBackgroundChecked: #c5e9ea;
+              --inputPlaceholderText: #605e5c;
+              --inputText: #323130;
+              --inputTextHovered: #201f1e;
+              --largeFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --largeFontSize: 18px;
+              --largeFontWeight: 400;
+              --largeMozOsxFontSmoothing: grayscale;
+              --largeWebkitFontSmoothing: antialiased;
+              --Lines: #a6a6a6;
+              --link: #03787c;
+              --linkHovered: #014446;
+              --listBackground: #ffffff;
+              --listHeaderBackgroundHovered: #f3f2f1;
+              --listHeaderBackgroundPressed: #edebe9;
+              --listItemBackgroundChecked: #edebe9;
+              --listItemBackgroundCheckedHovered: #e1dfdd;
+              --listItemBackgroundHovered: #f3f2f1;
+              --listText: #323130;
+              --listTextColor: #323130;
+              --magenta: #b4009e;
+              --magentaDark: #5c005c;
+              --magentaLight: #e3008c;
+              --mediumFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --mediumFontSize: 14px;
+              --mediumFontWeight: 400;
+              --mediumMozOsxFontSmoothing: grayscale;
+              --mediumPlusFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --mediumPlusFontSize: 16px;
+              --mediumPlusFontWeight: 400;
+              --mediumPlusMozOsxFontSmoothing: grayscale;
+              --mediumPlusWebkitFontSmoothing: antialiased;
+              --mediumWebkitFontSmoothing: antialiased;
+              --megaFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --megaFontSize: 68px;
+              --megaFontWeight: 600;
+              --megaMozOsxFontSmoothing: grayscale;
+              --megaWebkitFontSmoothing: antialiased;
+              --menuBackground: #ffffff;
+              --menuDivider: #c8c6c4;
+              --menuHeader: #03787c;
+              --menuIcon: #03787c;
+              --menuItemBackgroundChecked: #edebe9;
+              --menuItemBackgroundHovered: #f3f2f1;
+              --menuItemBackgroundPressed: #edebe9;
+              --menuItemText: #323130;
+              --menuItemTextHovered: #201f1e;
+              --messageLink: #005A9E;
+              --messageLinkHovered: #004578;
+              --messageText: #323130;
+              --Navigation: #666666;
+              --NavigationAccent: #03787c;
+              --NavigationHover: #03787c;
+              --NavigationHoverBackground: rgba(197, 233, 234, 0.50);
+              --NavigationPressed: #014446;
+              --NavigationSelectedBackground: rgba(234, 234, 234, 0.78);
+              --neutralDark: #201f1e;
+              --neutralLight: #edebe9;
+              --neutralLighter: #f3f2f1;
+              --neutralLighterAlt: #faf9f8;
+              --neutralPrimary: #323130;
+              --neutralPrimaryAlt: #3b3a39;
+              --neutralQuaternary: #d2d0ce;
+              --neutralQuaternaryAlt: #e1dfdd;
+              --neutralSecondary: #605e5c;
+              --neutralSecondaryAlt: #8a8886;
+              --neutralTertiary: #a19f9d;
+              --neutralTertiaryAlt: #c8c6c4;
+              --orange: #d83b01;
+              --orangeLight: #ea4300;
+              --orangeLighter: #ff8c00;
+              --PageBackground: #ffffff;
+              --primaryBackground: #ffffff;
+              --primaryButtonBackground: #03787c;
+              --primaryButtonBackgroundDisabled: #f3f2f1;
+              --primaryButtonBackgroundHovered: #026d70;
+              --primaryButtonBackgroundPressed: #025c5f;
+              --primaryButtonBorder: transparent;
+              --primaryButtonText: #ffffff;
+              --primaryButtonTextDisabled: #d2d0ce;
+              --primaryButtonTextHovered: #ffffff;
+              --primaryButtonTextPressed: #ffffff;
+              --primaryText: #333333;
+              --purple: #5c2d91;
+              --purpleDark: #32145a;
+              --purpleLight: #b4a0ff;
+              --red: #e81123;
+              --redDark: #a80000;
+              --roundedCorner2: 2px;
+              --roundedCorner4: 4px;
+              --roundedCorner6: 6px;
+              --RowAccent: #03787c;
+              --SelectionBackground: rgba(152, 214, 216, 0.50);
+              --severeWarningBackground: #FED9CC;
+              --severeWarningIcon: #D83B01;
+              --SiteTitle: #212121;
+              --smallFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --smallFontSize: 12px;
+              --smallFontWeight: 400;
+              --smallInputBorder: #605e5c;
+              --smallMozOsxFontSmoothing: grayscale;
+              --smallPlusFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --smallPlusFontSize: 12px;
+              --smallPlusFontWeight: 400;
+              --smallPlusMozOsxFontSmoothing: grayscale;
+              --smallPlusWebkitFontSmoothing: antialiased;
+              --smallWebkitFontSmoothing: antialiased;
+              --StrongBodyText: #212121;
+              --StrongLines: #98d6d8;
+              --SubtleBodyText: #767676;
+              --SubtleEmphasisBackground: #f4f4f4;
+              --SubtleEmphasisCommandLinks: #212121;
+              --SubtleEmphasisText: #666666;
+              --SubtleLines: #c8c8c8;
+              --successBackground: #DFF6DD;
+              --successIcon: #107C10;
+              --successText: #107C10;
+              --SuiteBarBackground: #03787c;
+              --suiteBarBackground: #03787c;
+              --SuiteBarDisabledText: #eaeaea;
+              --suiteBarDisabledText: #eaeaea;
+              --SuiteBarHoverBackground: #49aeb1;
+              --SuiteBarHoverText: #98d6d8;
+              --SuiteBarText: #ffffff;
+              --suiteBarText: #ffffff;
+              --superLargeFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --superLargeFontSize: 42px;
+              --superLargeFontWeight: 600;
+              --superLargeMozOsxFontSmoothing: grayscale;
+              --superLargeWebkitFontSmoothing: antialiased;
+              --teal: #008272;
+              --tealDark: #004b50;
+              --tealLight: #00b294;
+              --themeAccent: #03787c;
+              --themeAccentTranslucent10: rgba(3, 120, 124, 0.10);
+              --themeDark: #025c5f;
+              --themeDarkAlt: #026d70;
+              --themeDarker: #014446;
+              --themeLight: #98d6d8;
+              --themeLighter: #c5e9ea;
+              --themeLighterAlt: #f0f9fa;
+              --themePrimary: #03787c;
+              --themeSecondary: #13898d;
+              --themeTertiary: #49aeb1;
+              --TileBackgroundOverlay: rgba(0, 0, 0, 0.50);
+              --TileText: #ffffff;
+              --tinyFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --tinyFontSize: 10px;
+              --tinyFontWeight: 400;
+              --tinyMozOsxFontSmoothing: grayscale;
+              --tinyWebkitFontSmoothing: antialiased;
+              --TopBarBackground: rgba(234, 234, 234, 0.78);
+              --topBarBackground: rgba(234, 234, 234, 0.78);
+              --TopBarHoverText: #333333;
+              --topBarHoverText: #333333;
+              --TopBarPressedText: #014446;
+              --TopBarText: #666666;
+              --topBarText: #666666;
+              --variantBorder: #edebe9;
+              --variantBorderHovered: #a19f9d;
+              --warningBackground: #FFF4CE;
+              --warningHighlight: #ffb900;
+              --warningIcon: #797775;
+              --warningText: #323130;
+              --WebPartHeading: #333333;
+              --white: #ffffff;
+              --whiteTranslucent40: rgba(255, 255, 255, 0.40);
+              --xLargeFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --xLargeFontSize: 20px;
+              --xLargeFontWeight: 600;
+              --xLargeMozOsxFontSmoothing: grayscale;
+              --xLargePlusFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --xLargePlusFontSize: 24px;
+              --xLargePlusFontWeight: 600;
+              --xLargePlusMozOsxFontSmoothing: grayscale;
+              --xLargePlusWebkitFontSmoothing: antialiased;
+              --xLargeWebkitFontSmoothing: antialiased;
+              --xSmallFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --xSmallFontSize: 10px;
+              --xSmallFontWeight: 400;
+              --xSmallMozOsxFontSmoothing: grayscale;
+              --xSmallWebkitFontSmoothing: antialiased;
+              --xxLargeFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --xxLargeFontSize: 28px;
+              --xxLargeFontWeight: 600;
+              --xxLargeMozOsxFontSmoothing: grayscale;
+              --xxLargePlusFontFamily: 'Segoe UI', 'Segoe UI Web (West European)', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+              --xxLargePlusFontSize: 32px;
+              --xxLargePlusFontWeight: 600;
+              --xxLargePlusMozOsxFontSmoothing: grayscale;
+              --xxLargePlusWebkitFontSmoothing: antialiased;
+              --xxLargeWebkitFontSmoothing: antialiased;
+              --yellow: #ffb900;
+              --yellowDark: #d29200;
+              --yellowLight: #fff100
+            }
+          </style>
+          <mgt-file-list id="mgt-file-list">
+            <template>
+              <h1>My files</h1>
+              <div class="hoo-cardgrid">
+                <div data-for="file in files" class="hoo-doccard" data-props="{{@click: openFile}}">
+                  <div class="hoo-cardimage">
+                    <div data-if="file.folder"><img src="./folder.jpg" alt=""></div>
+                    <mgt-get data-if="!file.folder" resource="/drives/{{file.parentReference.driveId}}/items/{{file.id}}/thumbnails/0/c320x180_crop/content" type="image" cache-enabled="true">
+                      <template data-type="loading">
+                        <div class="hoo-ph-squared"></div>
+                      </template>
+                      <template data-type="error">
+                        <img src="./otter.jpg" alt="">
+                      </template>
+                      <template data-type="no-data">
+                        <img src="./otter.jpg" alt="">
+                      </template>
+                      <template data-type="default">
+                        <img src="{{image}}" width="320" height="180" alt="">
+                      </template>
+                    </mgt-get>
+                  </div>
+                  <div class="hoo-cardlocation">
+                    <mgt-get resource="/drives/{{file.parentReference.driveId}}" cache-enabled="true">
+                      <template data-type="loading">
+                        <div class="hoo-ph-row"></div>
+                      </template>
+                      <template data-type="error">
+                        <div class="hoo-ph-row"></div>
+                      </template>
+                      <template data-type="default">
+                        {{name}}
+                      </template>
+                    </mgt-get>
+                  </div>
+                  <div class="hoo-cardtitle">{{file.name}}</div>
+                  <div class="hoo-cardfooter">
+                    <div class="hoo-avatar">
+                      <mgt-get resource="/users/{{file.lastModifiedBy.user.id}}/photo/$value" type="image" cache-enabled="true">
+                        <template data-type="loading">
+                          <div class="hoo-ph-circle"></div>
+                        </template>
+                        <template data-type="no-data">
+                          <div class="hoo-ph-circle hoo-avatar-img"></div>
+                        </template>
+                        <template data-type="default">
+                          <img src="{{image}}" alt="" class="hoo-avatar-img" loading="lazy">
+                        </template>
+                      </mgt-get>
+                    </div>
+                    <div class="hoo-cardfooter-data">
+                      <div class="hoo-cardfooter-name">{{file.lastModifiedBy.user.displayName}}</div>
+                      <div class="hoo-cardfooter-modified">{{formatDate(file.lastModifiedDateTime)}}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button class="hoo-button-primary" data-props="{{@click: loadMore}}">
+                <div class="hoo-button-label">Load more</div>
+              </button>
+            </template>
+          </mgt-file-list>
+
+          <script>
+            let mgtFileList = document.querySelector('#mgt-file-list');
+
+            mgtFileList.templateContext = {
+
+              formatDate: date => {
+                const d = new Date(date);
+                return d.toLocaleString();
+              },
+
+              openFile: (e, context, root) => {
+                window.open(context.file.webUrl, '_blank');
+              },
+
+              loadMore: (e, context, root) => {
+                root.parentNode.renderNextPage();
+              }
+            }
+          </script>
+        </fluent-tab-panel>
+      </fluent-tabs>   
+      
+    </div>
+
+    <div id="isNotSignedIn">
+      It seems you are not connected. Please sign in using the mgt-login
+      component!
+    </div>
+
+    <script>
+      // When the user is signed in, we modify the visibility of some elements and load some data from Microsoft Graph
+      mgt.Providers.onProviderUpdated(() => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          document.getElementById("isSignedIn").style.display = "grid";
+          document.getElementById("isNotSignedIn").style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
