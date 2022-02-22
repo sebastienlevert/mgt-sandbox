@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <script src="https://unpkg.com/@microsoft/mgt@next/dist/bundle/mgt-loader.js"></script>
+    <script type="module" src="https://unpkg.com/@fluentui/web-components"></script>
+
+    <style>
+      #isSignedIn {
+        display: none;
+      }
+
+      fluent-tab-panel {
+        padding-top: 16px;
+      }
+
+      .mgt-dark {
+        --background-color: #1F1F1F;
+        background-color: var(--background-color);
+      }
+    </style>
+  </head>
+  <body>
+    <title>Using the mgt get component</title>
+    <mgt-msal2-provider      
+      client-id="%YOUR_CLIENT_ID%"
+      incremental-consent-disabled="true"
+      login-type="popup"
+    >
+    </mgt-msal2-provider>
+    
+    <mgt-login></mgt-login>
+    
+    <fluent-switch id="luminance">Dark Mode</fluent-switch>
+    <fluent-switch id="rtl">Right-to-left</fluent-switch>
+
+    <div id="isSignedIn">   
+      <fluent-tabs id="mgt-tab" orientation="horizontal">
+        <fluent-tab id="mgt-styling">Styling</fluent-tab>
+        <fluent-tab id="mgt-caching">Caching</fluent-tab>
+        <fluent-tab id="mgt-localization">Localization</fluent-tab>
+        <fluent-tab-panel id="mgt-styling-panel">
+          <style>
+            /* https://docs.microsoft.com/en-us/graph/toolkit/components/person#css-custom-properties */
+            mgt-person {
+              /*--avatar-size: 72px;
+              --avatar-border-radius: 0%;*/
+            }
+          </style>
+
+          <mgt-person person-query="me" view="threelines"></mgt-person>
+        </fluent-tab-panel>
+        <fluent-tab-panel id="mgt-caching-panel">
+          
+          <mgt-people></mgt-people>
+
+          <script>
+            /* https://docs.microsoft.com/en-us/graph/toolkit/customize-components/cache */
+            //mgt.CacheService.config.isEnabled = false;
+            //mgt.CacheService.config.defaultInvalidationPeriod = 60000;
+            //mgt.CacheService.config.people.isEnabled = true;
+            //mgt.CacheService.config.people.invalidationPeriod = 1000;              
+          </script>
+        </fluent-tab-panel>
+        <fluent-tab-panel id="mgt-caching-panel">
+          
+          <mgt-person person-query="me" person-card="hover"></mgt-person>
+
+          <script>
+            /* https://docs.microsoft.com/en-us/graph/toolkit/customize-components/localization */
+            /*mgt.LocalizationHelper.strings = {
+              _components: {
+                'person-card': {
+                  sendEmailLinkSubtitle: 'Envoyer un courriel',
+                  startChatLinkSubtitle: 'Discuter',
+                  showMoreSectionButton: 'Voir plus'
+                },
+                'person-card-contact': {
+                  contactSectionTitle: 'Information'
+                },
+                'person-card-organization': {
+                  reportsToSectionTitle: 'Gestionnaire',
+                  organizationSectionTitle: 'Organigramme',
+                  youWorkWithSubSectionTitle: 'Collègues',
+                },
+                'person-card-messages': {
+                  emailsSectionTitle: 'Courriels'
+                },
+                'person-card-files': {
+                  filesSectionTitle: 'Fichiers',
+                  sharedTextSubtitle: 'Partagé'
+                },
+                'person-card-profile': {
+                  SkillsAndExperienceSectionTitle: 'Expérience et habiletés',
+                  AboutCompactSectionTitle: 'À propos',
+                  SkillsSubSectionTitle: 'Habiletés',
+                  LanguagesSubSectionTitle: 'Langues',
+                  WorkExperienceSubSectionTitle: 'Expérience',
+                  EducationSubSectionTitle: 'Éducation',
+                  professionalInterestsSubSectionTitle: 'Intérêts professionels',
+                  personalInterestsSubSectionTitle: 'Intérêts personnels',
+                  birthdaySubSectionTitle: 'Anniversaire',
+                  currentYearSubtitle: 'En cours'
+                }
+              }
+            };*/       
+          </script>
+        </fluent-tab-panel>
+      </fluent-tabs>   
+      
+    </div>
+
+    <div id="isNotSignedIn">
+      It seems you are not connected. Please sign in using the mgt-login
+      component!
+    </div>
+
+    <script type="module">
+      import {
+        accentPalette,
+        baseLayerLuminance,
+        PaletteRGB,
+        StandardLuminance,
+        SwatchRGB,
+        Switch,
+      } from "https://unpkg.com/@fluentui/web-components";
+      import { parseColorHexRGB } from 'https://unpkg.com/@microsoft/fast-colors';
+
+      var luminanceSwitch = document.getElementById("luminance");
+      var rtlSwitch = document.getElementById("rtl");
+      
+      /* https://docs.microsoft.com/en-us/graph/toolkit/customize-components/style#apply-themes */
+      luminanceSwitch.addEventListener('change', () => {
+        baseLayerLuminance.setValueFor(
+          document.getElementsByTagName('body')[0],
+          !luminanceSwitch.checked
+            ? StandardLuminance.LightMode
+            : StandardLuminance.DarkMode
+        );
+
+        document.getElementsByTagName('body')[0].className = luminanceSwitch.checked ? "mgt-dark" : "mgt-light";
+      });
+      
+      /* https://docs.microsoft.com/en-us/graph/toolkit/customize-components/right-to-left */
+      rtlSwitch.addEventListener('change', () => { 
+        document.getElementsByTagName('body')[0].style.direction = rtlSwitch.checked ? 'rtl' : '';
+      })
+    </script>
+    <script>
+      // When the user is signed in, we modify the visibility of some elements and load some data from Microsoft Graph
+      mgt.Providers.onProviderUpdated(() => {
+        if (mgt.Providers.globalProvider.state === mgt.ProviderState.SignedIn) {
+          document.getElementById("isSignedIn").style.display = "grid";
+          document.getElementById("isNotSignedIn").style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>
