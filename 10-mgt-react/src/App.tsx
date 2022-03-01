@@ -59,7 +59,7 @@ function EmailsComponent(props: MgtTemplateProps) {
   const email = props.dataContext;
   return (
     <div>
-      <div className="email" data-for="email in value">
+      <div className="email">
 				<div className="header">
 					<div>
 						<Person personQuery={email.sender.emailAddress.address} view={PersonViewType.oneline} personCardInteraction={PersonCardInteraction.hover} />
