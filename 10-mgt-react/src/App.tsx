@@ -66,7 +66,7 @@ function EmailsComponent(props: MgtTemplateProps) {
 					</div>
 				</div>
 				<div className="title">
-					<a href={email.webLink} target="_blank">
+					<a href={email.webLink} target="_blank" rel="noreferrer">
 						<h3>{email.subject}</h3>
 					</a>
 					<span className="date">
