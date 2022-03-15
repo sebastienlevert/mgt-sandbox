@@ -1,0 +1,63 @@
+{
+    "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+    "solution": {
+        "name": "12-mgt-spfx-client-side-solution",
+        "id": "3f832831-22e0-48fc-b601-8b89532c8ef5",
+        "version": "1.0.0.0",
+        "includeClientSideAssets": true,
+        "skipFeatureDeployment": true,
+        "webApiPermissionRequests": [{
+                "resource": "Microsoft Graph",
+                "scope": "Calendars.Read"
+            },
+            {
+                "resource": "Microsoft Graph",
+                "scope": "User.Read.All"
+            },
+            {
+                "resource": "Microsoft Graph",
+                "scope": "Files.Read.All"
+            },
+            {
+                "resource": "Microsoft Graph",
+                "scope": "Sites.Read.All"
+            },
+            {
+                "resource": "Microsoft Graph",
+                "scope": "Mail.Read"
+            },
+            {
+                "resource": "Microsoft Graph",
+                "scope": "People.Read.All"
+            }
+        ],
+        "isDomainIsolated": false,
+        "developer": {
+            "name": "",
+            "websiteUrl": "",
+            "privacyUrl": "",
+            "termsOfUseUrl": "",
+            "mpnId": "Undefined-1.15.0-beta.1"
+        },
+        "metadata": {
+            "shortDescription": {
+                "default": "12-mgt-spfx description"
+            },
+            "longDescription": {
+                "default": "12-mgt-spfx description"
+            },
+            "screenshotPaths": [],
+            "videoUrl": "",
+            "categories": []
+        },
+        "features": [{
+            "title": "12-mgt-spfx Feature",
+            "description": "The feature that activates elements of the 12-mgt-spfx solution.",
+            "id": "e8449427-5b0e-4031-a9a7-b1f1accce6cf",
+            "version": "1.0.0.0"
+        }]
+    },
+    "paths": {
+        "zippedPackage": "solution/12-mgt-spfx.sppkg"
+    }
+}
