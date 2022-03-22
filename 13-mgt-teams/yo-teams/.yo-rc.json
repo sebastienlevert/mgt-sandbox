@@ -1,0 +1,12 @@
+{
+  "generator-teams": {
+    "promptValues": {
+      "developer": "Sébastien Levert",
+      "unitTestsEnabled": false,
+      "lintingSupport": false,
+      "useAzureAppInsights": false
+    },
+    "libraryName": "yoTeams",
+    "generator-version": "4.0.0-next.2"
+  }
+}
