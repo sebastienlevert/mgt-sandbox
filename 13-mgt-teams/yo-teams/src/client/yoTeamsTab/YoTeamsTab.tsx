@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { useTeams } from "msteams-react-base-component";
 import { app } from "@microsoft/teams-js";
 import { Login, MgtPersonCard, Person, PersonCardInteraction, ViewType } from "@microsoft/mgt-react";
+import { Providers } from "@microsoft/mgt-react";
+import { TeamsMsal2Provider } from "@microsoft/mgt-teams-msal2-provider";
+import * as MicrosoftTeams from "@microsoft/teams-js";
 
 /**
  * Implementation of the yo teams content page
@@ -15,7 +18,14 @@ export const YoTeamsTab = () => {
     const [mgtTheme, setMgtTheme] = useState<string | undefined>('mgt-light');
 
     useEffect(() => {
-        if (inTeams === true) {
+        if (inTeams === true) {            
+            TeamsMsal2Provider.microsoftTeamsLib = MicrosoftTeams;
+
+            Providers.globalProvider = new TeamsMsal2Provider({
+                clientId: process.env.CLIENT_ID!,
+                scopes: ['User.Read'],
+                authPopupUrl: '/auth.html'
+            });
             app.notifySuccess();
         } else {
             setEntityId("Not in Microsoft Teams");
