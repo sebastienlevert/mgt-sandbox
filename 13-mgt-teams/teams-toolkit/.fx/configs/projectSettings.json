@@ -1,0 +1,23 @@
+{
+    "appName": "teamsfxgraphtoolkitcontact",
+    "solutionSettings": {
+        "name": "fx-solution-azure",
+        "version": "1.0.0",
+        "hostType": "Azure",
+        "azureResources": [],
+        "capabilities": [
+            "Tab"
+        ],
+        "activeResourcePlugins": [
+            "fx-resource-frontend-hosting",
+            "fx-resource-identity",
+            "fx-resource-aad-app-for-teams",
+            "fx-resource-local-debug",
+            "fx-resource-appstudio"
+        ]
+    },
+    "version": "2.1.0",
+    "isFromSample": true,
+    "programmingLanguage": "javascript",
+    "projectId": "7eb5f95e-8461-432b-ba83-098ff3cd486f"
+}
